@@ -109,11 +109,10 @@ jobs:
                       app_version="${{ github.ref_name }}"
                   fi
                   echo "app_version=${app_version}" >> $GITHUB_OUTPUT
-                  
-                  # ====================================================================
-                  # Repo name - adds "dev" subdirectory if that's a snapshot
-                  # so the artifacthub.io will not show always snapshot as latest stable
-                  # ====================================================================
+
+                  # ===========================================================================
+                  # Sets repository name: Fallbacks to repository-owner/charts if not specified
+                  # ===========================================================================
                   repo_name="${{ inputs.chartRepoName }}"
                   if [[ "${repo_name}" == "" ]]; then        # FALLBACK: when Workflow input was not specified, then use org-name/charts
                       repo_name="${{ github.repository_owner }}/charts"
@@ -132,6 +131,13 @@ jobs:
                   
                   yq e -i ".appVersion= \"${{ steps.facts.outputs.app_version }}\"" ${{ inputs.chartPath }}/Chart.yaml
                   yq e -i ".version= \"${{ steps.facts.outputs.ref }}\"" ${{ inputs.chartPath }}/Chart.yaml
+
+            - name: Merge values
+              run: |
+                  set -e
+                  if [[ -f "${{ inputs.chartPath }}/values.override.yaml" ]]; then
+                      yq '. *= load("values.override.yaml")' values.yaml
+                  fi
 
             - name: Generate README.md
               if: ${{ (steps.facts.outputs.docs == 'true' || inputs.enableHelmDocs) && !startsWith(github.ref, 'refs/tags/v') }}
