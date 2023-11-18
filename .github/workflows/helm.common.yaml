@@ -136,7 +136,7 @@ jobs:
               run: |
                   set -e
                   if [[ -f "${{ inputs.chartPath }}/values.override.yaml" ]]; then
-                      yq '. *= load("values.override.yaml")' values.yaml
+                      yq '. *= load("${{ inputs.chartPath }}/values.override.yaml")' ${{ inputs.chartPath }}/values.yaml
                   fi
 
             - name: Generate README.md
