@@ -21,6 +21,10 @@ on:
             osVersion:
                 type: string
                 default: "ubuntu-22.04"
+
+            testCommand:
+                type: string
+                default: "make test"
 jobs:
     build:
         runs-on: ${{ inputs.osVersion }}
@@ -38,7 +42,7 @@ jobs:
               run: make build
 
             - name: Test
-              run: make test
+              run: '${{ inputs.testCommand }}'
 
             - name: Test report
               if: always() && !contains(github.event.head_commit.message, '!test skip') && github.event_name != 'pull_request'
